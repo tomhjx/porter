@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+
+  porter:
+    image: golang:1.20-alpine
+    command: ["go", "run", "./"]
+    working_dir: /app
+    environment:
+      TZ: 'Asia/Shanghai'
+    volumes:
+      - ./src:/app
+      - ~/Work/workspace/go:/go
+
+networks:
+  default:
+    name: lab

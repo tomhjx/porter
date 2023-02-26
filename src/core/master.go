@@ -8,11 +8,6 @@ import (
 
 var wg sync.WaitGroup
 
-type Order struct {
-	Model string `yaml:"model"`
-	Out   string `yaml:"out"`
-}
-
 type master struct {
 	orders []Order
 }

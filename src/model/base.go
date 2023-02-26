@@ -2,6 +2,12 @@ package model
 
 import "reflect"
 
+const (
+	htmlContentFormat      = "Html"
+	plainTextContentFormat = "PlainText"
+	markdownContentFormat  = "Markdown"
+)
+
 type Content struct {
 	ID        string `json:"id"`
 	Title     string `json:"title"`
@@ -10,6 +16,7 @@ type Content struct {
 	Source    string `json:"source"`
 	CrawledAt int64  `json:"crawledAt"`
 	Sort      int64  `json:"sort"`
+	Format    string `json:"format"`
 }
 
 type Base interface {
@@ -18,8 +25,8 @@ type Base interface {
 
 type Factory struct{}
 
-func (o Factory) NewRedisReleaseNotes() *RedisReleaseNotes {
-	return &RedisReleaseNotes{}
+func (o Factory) NewRedisReleaseNotes() *redisReleaseNotes {
+	return &redisReleaseNotes{}
 }
 
 func New(name string) Base {

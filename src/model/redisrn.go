@@ -11,10 +11,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type RedisReleaseNotes struct {
+type redisReleaseNotes struct {
 }
 
-func (o *RedisReleaseNotes) Read(contentNotify chan Content) {
+func (o *redisReleaseNotes) Read(contentNotify chan Content) {
 
 	defer close(contentNotify)
 
@@ -52,6 +52,7 @@ func (o *RedisReleaseNotes) Read(contentNotify chan Content) {
 			return
 		}
 		ctx.Body = string(body)
+		ctx.Format = plainTextContentFormat
 		contentNotify <- ctx
 	})
 

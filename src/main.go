@@ -1,33 +1,64 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"strings"
 
-	"github.com/gocolly/colly/v2"
+	log "github.com/sirupsen/logrus"
+	"github.com/tomhjx/porter/core"
+	"gopkg.in/yaml.v3"
 )
 
+const (
+	VERSION = "1.0.0"
+)
+
+type stringsFlag []string
+
+func (i *stringsFlag) String() string {
+	return strings.Join([]string(*i), ",")
+}
+
+func (i *stringsFlag) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
+func (i *stringsFlag) Get() []string {
+	return []string(*i)
+}
+
 func main() {
-	// Instantiate default collector
-	c := colly.NewCollector(
-		// Visit only domains: hackerspaces.org, wiki.hackerspaces.org
-		colly.AllowedDomains("hackerspaces.org", "wiki.hackerspaces.org"),
+	var (
+		srcps    stringsFlag
+		showHelp bool
 	)
+	flag.Var(&srcps, "s", "source's clashx configuration yaml url.")
+	flag.Parse()
 
-	// On every a element which has href attribute call callback
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		// Print link
-		fmt.Printf("Link found: %q -> %s\n", e.Text, link)
-		// Visit link found on page
-		// Only those links are visited which are in AllowedDomains
-		c.Visit(e.Request.AbsoluteURL(link))
-	})
+	allOrders := []core.Order{}
 
-	// Before making a request print "Visiting ..."
-	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL.String())
-	})
-
-	// Start scraping on https://hackerspaces.org
-	c.Visit("https://hackerspaces.org/")
+	if showHelp {
+		fmt.Printf("version %s\n", VERSION)
+		flag.Usage()
+		return
+	}
+	for _, srcp := range srcps {
+		c, err := ioutil.ReadFile(srcp)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		orders := []core.Order{}
+		err = yaml.Unmarshal(c, &orders)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		log.Infof("%v", orders)
+		allOrders = append(allOrders, orders...)
+	}
+	core.NewMaster(allOrders).Run()
 }
